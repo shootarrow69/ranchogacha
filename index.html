@@ -127,13 +127,25 @@ button{
     opacity:1;
   }
 }
+
+/* дождь монеток */
+.coin{
+  position:absolute;
+  font-size:24px;
+  pointer-events:none;
+  animation:fall 2s linear forwards;
+}
+
+@keyframes fall{
+  0%{transform:translateY(0) rotate(0deg); opacity:1;}
+  100%{transform:translateY(100vh) rotate(360deg); opacity:0;}
+}
 </style>
 </head>
 
 <body>
 
 <div class="title">гача.exe</div>
-
 <button id="startBtn">запустить</button>
 
 <div id="machine">
@@ -161,7 +173,7 @@ fail.volume = 0.5;
 ok.volume = 0.5;
 
 const letters = "йцукенгшщзхфывапролджэячсмитьбю";
-const winWords = ["хуй","бля","вор","сво","лол","хех","кек"];
+const winWords = ["хуй","бля","вор","сво","лол","хех","кек","чмо","ауе,"пуп""];
 
 const r1 = document.getElementById("r1");
 const r2 = document.getElementById("r2");
@@ -224,7 +236,6 @@ function spinReel(reel,duration){
 }
 
 function animateToWord(reels, word, callback){
-  // быстро перебираем буквы перед финальной
   let steps = 15;
   reels.forEach((reel,i)=>{
     let step = 0;
@@ -241,6 +252,21 @@ function animateToWord(reels, word, callback){
   });
 }
 
+// анимация дождя монеток
+function coinRain(){
+  appear.currentTime = 0;
+  appear.play();
+  for(let i=0;i<30;i++){
+    const coin = document.createElement('div');
+    coin.className='coin';
+    coin.textContent='💰';
+    coin.style.left = Math.random()*window.innerWidth + 'px';
+    coin.style.fontSize = (20 + Math.random()*20) + 'px';
+    document.body.appendChild(coin);
+    setTimeout(()=>{ coin.remove(); }, 2000);
+  }
+}
+
 function finalize(){
   const forcedWin = Math.random() < 0.33;
   if(forcedWin){
@@ -253,6 +279,7 @@ function finalize(){
       result.textContent="ты подебил.";
       result.style.color="#00ff55";
       result.classList.add("show");
+      if(word==="сво") coinRain();
     });
   } else {
     r1.textContent = randLetter();
@@ -273,6 +300,5 @@ document.body.onclick = function(){
   fail.play();
 }
 </script>
-
 </body>
 </html>
