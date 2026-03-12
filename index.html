@@ -173,7 +173,7 @@ fail.volume = 0.5;
 ok.volume = 0.5;
 
 const letters = "йцукенгшщзхфывапролджэячсмитьбю";
-const winWords = ["хуй","бля","вор","сво","лол","хех","кек","чмо","ауе,"пуп""];
+const winWords = ["хуй","бля","вор","сво","лол","хех","кек","аня","оля","ауе","кок","хер","чмо","лох","лев","фоф","ххх","ъеъ","яна","чуш","сас","йух","бан"];
 
 const r1 = document.getElementById("r1");
 const r2 = document.getElementById("r2");
@@ -192,7 +192,7 @@ function initAudio() {
   });
 }
 
-startBtn.onclick = function(e){
+startBtn.addEventListener('click', function(e){
   e.stopPropagation();
   initAudio();
   ok.currentTime = 0;
@@ -201,9 +201,9 @@ startBtn.onclick = function(e){
   machine.style.display="block";
   machine.classList.add("show");
   appear.play();
-}
+});
 
-machine.onclick = function(e){
+machine.addEventListener('click', function(e){
   e.stopPropagation();
   ok.currentTime=0;
   ok.play();
@@ -218,7 +218,7 @@ machine.onclick = function(e){
   spinReel(r1,900);
   spinReel(r2,1200);
   spinReel(r3,1500);
-}
+});
 
 function spinReel(reel,duration){
   let speed=30;
@@ -235,24 +235,30 @@ function spinReel(reel,duration){
   },speed);
 }
 
-function animateToWord(reels, word, callback){
-  let steps = 15;
-  reels.forEach((reel,i)=>{
-    let step = 0;
+// поочередная остановка слотов с подкруткой
+function animateToWordSequential(reels, word, callback){
+  let i=0;
+  function nextReel(){
+    if(i>=reels.length){ callback(); return; }
+    let steps = 15;
+    let step=0;
+    const reel = reels[i];
     const interval = setInterval(()=>{
-      if(step < steps){
-        reel.textContent = randLetter();
+      if(step<steps){
+        reel.textContent=randLetter();
         step++;
       } else {
         reel.textContent = word[i].toUpperCase();
         clearInterval(interval);
-        if(i===reels.length-1) callback();
+        i++;
+        setTimeout(nextReel, 150); // задержка перед следующим слотом
       }
     }, 50);
-  });
+  }
+  nextReel();
 }
 
-// анимация дождя монеток
+// дождь монеток
 function coinRain(){
   appear.currentTime = 0;
   appear.play();
@@ -271,7 +277,7 @@ function finalize(){
   const forcedWin = Math.random() < 0.33;
   if(forcedWin){
     const word = winWords[Math.floor(Math.random()*winWords.length)];
-    animateToWord([r1,r2,r3], word, ()=>{
+    animateToWordSequential([r1,r2,r3], word, ()=>{
       r1.classList.add("win");
       r2.classList.add("win");
       r3.classList.add("win");
@@ -279,7 +285,7 @@ function finalize(){
       result.textContent="ты подебил.";
       result.style.color="#00ff55";
       result.classList.add("show");
-      if(word==="сво") coinRain();
+      if(word==="сво") setTimeout(coinRain, 200); // дождь монет после анимации
     });
   } else {
     r1.textContent = randLetter();
@@ -300,5 +306,6 @@ document.body.onclick = function(){
   fail.play();
 }
 </script>
+
 </body>
 </html>
