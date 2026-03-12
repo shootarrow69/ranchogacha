@@ -150,7 +150,6 @@ const username = "shootarrow69";
 const repo = "ranchogacha";
 const branch = "main";
 
-// аудио с прямыми ссылками на GitHub
 const fail   = new Audio(`https://raw.githubusercontent.com/${username}/${repo}/${branch}/HS_SE_000.mp3`);
 const ok     = new Audio(`https://raw.githubusercontent.com/${username}/${repo}/${branch}/HS_SE_001.mp3`);
 const win    = new Audio(`https://raw.githubusercontent.com/${username}/${repo}/${branch}/HS_SE_036.mp3`);
@@ -172,13 +171,10 @@ const machine = document.getElementById("machine");
 const startBtn = document.getElementById("startBtn");
 const result = document.getElementById("result");
 
-function randLetter(){
-  return letters[Math.floor(Math.random()*letters.length)];
-}
+function randLetter(){ return letters[Math.floor(Math.random()*letters.length)]; }
 
-// Инициализация аудио после первого клика
 function initAudio() {
-  [fail, ok, win, lose, spin, appear].forEach(a => {
+  [fail, ok, win, lose, spin, appear].forEach(a=>{
     a.play().then(()=>a.pause());
     a.currentTime = 0;
   });
@@ -186,7 +182,7 @@ function initAudio() {
 
 startBtn.onclick = function(e){
   e.stopPropagation();
-  initAudio(); // инициализация
+  initAudio();
   ok.currentTime = 0;
   ok.play();
   startBtn.style.display="none";
@@ -222,28 +218,42 @@ function spinReel(reel,duration){
     if(elapsed>=duration){
       clearInterval(interval);
       reel.classList.remove("spinning");
-      if(reel===r3){
-        spin.pause();
-        spin.currentTime=0;
-        finalize();
-      }
+      if(reel===r3){ spin.pause(); spin.currentTime=0; finalize(); }
     }
   },speed);
 }
 
+function animateToWord(reels, word, callback){
+  // быстро перебираем буквы перед финальной
+  let steps = 15;
+  reels.forEach((reel,i)=>{
+    let step = 0;
+    const interval = setInterval(()=>{
+      if(step < steps){
+        reel.textContent = randLetter();
+        step++;
+      } else {
+        reel.textContent = word[i].toUpperCase();
+        clearInterval(interval);
+        if(i===reels.length-1) callback();
+      }
+    }, 50);
+  });
+}
+
 function finalize(){
-  const forcedWin = Math.random() < 0.33; // 33% шанс выиграть
+  const forcedWin = Math.random() < 0.33;
   if(forcedWin){
     const word = winWords[Math.floor(Math.random()*winWords.length)];
-    r1.textContent = word[0].toUpperCase();
-    r2.textContent = word[1].toUpperCase();
-    r3.textContent = word[2].toUpperCase();
-    r1.classList.add("win");
-    r2.classList.add("win");
-    r3.classList.add("win");
-    win.play();
-    result.textContent="ты подебил.";
-    result.style.color="#00ff55";
+    animateToWord([r1,r2,r3], word, ()=>{
+      r1.classList.add("win");
+      r2.classList.add("win");
+      r3.classList.add("win");
+      win.play();
+      result.textContent="ты подебил.";
+      result.style.color="#00ff55";
+      result.classList.add("show");
+    });
   } else {
     r1.textContent = randLetter();
     r2.textContent = randLetter();
@@ -254,8 +264,8 @@ function finalize(){
     lose.play();
     result.textContent="ты лошпед)))";
     result.style.color="#ff3333";
+    result.classList.add("show");
   }
-  result.classList.add("show");
 }
 
 document.body.onclick = function(){
