@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>гача.exe</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block" rel="stylesheet">
+
+<style>
+body{
+  background:#000;
+  color:#fff;
+  font-family:'Press Start 2P', monospace;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  margin:0;
+  overflow:hidden;
+}
+
+.title{
+  opacity:0.35;
+  font-size:32px;
+  margin-bottom:140px;
+  border:3px solid #fff;
+  padding:25px 70px;
+  border-radius:60px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+button{
+  background:#000;
+  color:#fff;
+  border:3px solid #fff;
+  font-family:'Press Start 2P';
+  padding:14px 40px;
+  cursor:pointer;
+  outline:none;
+}
+
+#machine{
+  display:none;
+  border:3px solid #fff;
+  padding:30px;
+  cursor:pointer;
+  position:relative;
+  transform:scale(0.8);
+  opacity:0;
+}
+
+#machine.show{
+  animation:appear 0.4s ease forwards;
+}
+
+#machine:active{
+  transform:scale(0.98);
+}
+
+@keyframes appear{
+  0%{transform:scale(0.7);opacity:0;}
+  60%{transform:scale(1.05);opacity:1;}
+  100%{transform:scale(1);opacity:1;}
+}
+
+.reels{
+  display:flex;
+  gap:15px;
+}
+
+.reel{
+  width:70px;
+  height:80px;
+  border:3px solid #fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:32px;
+  background:#000;
+  line-height:1;
+}
+
+.win{color:#00ff55;}
+.lose{color:#ff3333;}
+
+.spinning{
+  animation:shake 0.07s infinite;
+}
+
+@keyframes shake{
+  0%{transform:translate(0,0)}
+  25%{transform:translate(1px,-1px)}
+  50%{transform:translate(-1px,1px)}
+  75%{transform:translate(1px,1px)}
+  100%{transform:translate(0,0)}
+}
+
+/* всплывающий результат */
+#result{
+  position:absolute;
+  left:100%;
+  top:10px;
+  margin-left:25px;
+  opacity:0;
+  pointer-events:none;
+}
+
+#result.show{
+  animation:slidePop 0.5s ease forwards;
+}
+
+@keyframes slidePop{
+  0%{
+    transform:translateX(-40px) rotate(-20deg) scale(0.6);
+    opacity:0;
+  }
+  70%{
+    transform:translateX(10px) rotate(10deg) scale(1.1);
+    opacity:1;
+  }
+  100%{
+    transform:translateX(0) rotate(0deg) scale(1);
+    opacity:1;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="title">гача.exe</div>
+
+<button id="startBtn">запустить</button>
+
+<div id="machine">
+  <div class="reels">
+    <div class="reel" id="r1">А</div>
+    <div class="reel" id="r2">А</div>
+    <div class="reel" id="r3">А</div>
+  </div>
+  <div id="result"></div>
+</div>
+
+<script>
+const fail   = new Audio("https://raw.githubusercontent.com/<shootarrow69>/ranchogacha/main/HS_SE_000.mp3")
+const ok     = new Audio("https://raw.githubusercontent.com/<shootarrow69>/ranchogacha/main/HS_SE_001.mp3")
+const win    = new Audio("https://raw.githubusercontent.com/<shootarrow69>/ranchogacha/main/HS_SE_036.mp3")
+const lose   = new Audio("https://raw.githubusercontent.com/<shootarrow69>/ranchogacha/main/HS_SE_037.mp3")
+const spin   = new Audio("https://raw.githubusercontent.com/<shootarrow69>/ranchogacha/main/HS_SE_103.mp3")
+const appear = new Audio("https://raw.githubusercontent.com/<shootarrow69>/ranchogacha/main/HS_SE_133.mp3")
+
+fail.volume = 0.5
+ok.volume = 0.5
+
+const letters = "йцукенгшщзхфывапролджэячсмитьбю"
+const winWords = ["хуй","бля","вор","сво","лол","хех","кек"]
+
+const r1 = document.getElementById("r1")
+const r2 = document.getElementById("r2")
+const r3 = document.getElementById("r3")
+
+const machine = document.getElementById("machine")
+const startBtn = document.getElementById("startBtn")
+const result = document.getElementById("result")
+
+function randLetter(){
+  return letters[Math.floor(Math.random()*letters.length)]
+}
+
+startBtn.onclick = function(e){
+  e.stopPropagation()
+  ok.play()
+  startBtn.style.display="none"
+  machine.style.display="block"
+  machine.classList.add("show")
+  appear.play()
+}
+
+machine.onclick = function(e){
+  e.stopPropagation()
+  ok.currentTime=0
+  ok.play()
+  result.className=""
+  result.textContent=""
+  r1.className="reel spinning"
+  r2.className="reel spinning"
+  r3.className="reel spinning"
+  spin.loop = true
+  spin.currentTime = 0
+  spin.play()
+  spinReel(r1,900)
+  spinReel(r2,1200)
+  spinReel(r3,1500)
+}
+
+function spinReel(reel,duration){
+  let speed=30
+  let elapsed=0
+  const interval=setInterval(()=>{
+    reel.textContent=randLetter()
+    elapsed+=speed
+    speed+=2
+    if(elapsed>=duration){
+      clearInterval(interval)
+      reel.classList.remove("spinning")
+      if(reel===r3){
+        spin.pause()
+        spin.currentTime=0
+        finalize()
+      }
+    }
+  },speed)
+}
+
+function finalize(){
+  // 33% шанс выиграть
+  const forcedWin = Math.random() < 0.33
+
+  if(forcedWin){
+    // выбираем случайное ключевое слово
+    const word = winWords[Math.floor(Math.random()*winWords.length)]
+    r1.textContent = word[0].toLowerCase()
+    r2.textContent = word[1].toLowerCase()
+    r3.textContent = word[2].toLowerCase()
+    r1.classList.add("win")
+    r2.classList.add("win")
+    r3.classList.add("win")
+    win.play()
+    result.textContent="ты подебил."
+    result.style.color="#00ff55"
+  } else {
+    // обычные случайные буквы
+    r1.textContent = randLetter()
+    r2.textContent = randLetter()
+    r3.textContent = randLetter()
+    r1.classList.add("lose")
+    r2.classList.add("lose")
+    r3.classList.add("lose")
+    lose.play()
+    result.textContent="ты лошпед)))"
+    result.style.color="#ff3333"
+  }
+
+  result.classList.add("show")
+}
+
+document.body.onclick = function(){
+  fail.currentTime=0
+  fail.play()
+}
+</script>
+
+</body>
+</html>
